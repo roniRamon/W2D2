@@ -50,7 +50,16 @@ class Board
   end
 
   def add_piece(piece, pos)
-    @board[pos] = piece.new(board, 1)
+    case piece
+    when :king
+      King.new(@rows, pos, color)
+    when :queen
+      Queen.new(@rows, pos, color)
+    when :bishop
+    when :rook
+    when :knight
+    when :pawn
+    end
   end
 
   def checkmate?(color)
@@ -65,6 +74,8 @@ class Board
   end
 
   def pieces
+    pieces = [:king, :queen, :bishop, :rook, :knight, :pawn]
+
   end
 
   def dup

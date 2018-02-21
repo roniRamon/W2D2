@@ -2,7 +2,7 @@ require_relative 'piece.rb'
 require 'singleton'
 
 class NullPiece < Piece
-  incldue Singleton
+  include Singleton
 
   attr_reader :symbol, :color
 

@@ -1,7 +1,7 @@
 require_relative 'piece.rb'
 
 
-class QueenPiece < Piece
+class BishopPiece < Piece
   include SlidingPiece
   attr_reader :symbol, :color, :pos
 
@@ -12,11 +12,11 @@ class QueenPiece < Piece
   end
 
   def move_dirs
-    [:diag, :horiz]
+    :diag
   end
 
   def symbol
-      @color == :black ? "\u265B".encode('utf-8') : "\u2655".encode('utf-8')
+    @color == :black ? "\u265D".encode('utf-8') : "\u2657".encode('utf-8')
   end
 
   def color

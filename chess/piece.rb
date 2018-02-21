@@ -1,6 +1,6 @@
 class Piece
 
-  def initialize(color, board, pos)
+  def initialize(board, pos, color)
     @color = color
     @board = board
     @pos = pos
@@ -13,8 +13,8 @@ class Piece
   def to_s
   end
 
-  def empty?
-    @pos.nil?
+  def empty?(position)
+    @board[position] == NullPiece.instance
   end
 
   def valid_moves
@@ -36,52 +36,66 @@ end
 
 module SlidingPiece
 
-  def horizontal_dirs
-    x, y = @pos
-    (0..7).each do |i|
-      next if [x,i] == @pos || [i,y] ==   @pos
-      horizontal_dirs << [x,i]
-      horizontal_dirs << [i,y]
+  def moves
+    moves = []
+
+    if move_dirs == :horiz
+      horizontal_dirs.each do |dir|
+        moves += grow_unblocked_moves_in_dir(dir[0],dir[1])
+      end
+    elsif move_dirs == :diag
+      diagonal_dirs.each do |dir|
+        moves += grow_unblocked_moves_in_dir(dir[0],dir[1])
+      end
+    elsif move_dirs == [:diag, :horiz]
+      both = diagonal_dirs + horizontal_dirs
+      both.each do |dir|
+        moves += grow_unblocked_moves_in_dir(dir[0],dir[1])
+      end
     end
+    moves
+  end
+
+  def horizontal_dirs
+    HORIZONTAL_DIRS
   end
 
   def diagonal_dirs
-    x, y = @pos
-    (1..7).each do |i|
-      diagonal_dirs << [x + i, y + i]
-      diagonal_dirs << [x - i, y - i]
-      diagonal_dirs << [x + i, y - i]
-      diagonal_dirs << [x - i, y + i]
-    end
-    diagonal_dirs.select { |el| el[0].between?(0,7) && el[1].between?(0,7)}
-  end
-
-  def moves
-    horizontal_dirs || diagonal_dirs
+    DIAGONAL_DIRS
   end
 
   private
 
-  horizontal_dirs = []
-  diagonal_dirs = []
+  def grow_unblocked_moves_in_dir(dx, dy)
+    possible_moves = []
+    x, y = @pos[0] + dx, @pos[1] + dy
+    while x.between?(0, 6) && y.between?(0, 6) && empty?([x, y])
+      x += dx
+      y += dy
+      possible_moves << [x, y]
+    end
+
+    possible_moves
+  end
+
+  HORIZONTAL_DIRS = [[0, 1], [1, 0], [-1, 0], [0, -1]]
+  DIAGONAL_DIRS = [[1, 1], [-1, -1], [-1, 1], [1, -1]]
 
   def move_dirs
-    [:left, :right, :up, :down]
+    [:diag, :horiz]
   end
 
-  def grow_unblocked_moves_in_dir(dx, dy)
-  end
 end
 
 module SteppingPiece
   def moves
     possible_moves = []
-    x, y = @pos
-
-    (x - 1..x + 1).each do |row|
-      (y - 1..y + 1).each do |col|
-        next if !row.between?(0,7) || !col.between?(0,7)
-        possible_moves << [row,col] unless row == x && col == y
+    move_diffs.each do |dir|
+      next_move = [@pos[0] + dir[0], @pos[1] + dir[1]]
+      if next_move[0].between?(0, 7) && next_move[1].between?(0, 7)
+        if empty?(next_move)
+          possible_moves << next_move
+        end
       end
     end
     possible_moves
@@ -90,6 +104,7 @@ module SteppingPiece
   private
 
   def move_diffs
-
+    king = [[0, 1], [1, 0], [-1, 0], [0, -1], [1, 1], [-1, -1], [-1, 1], [1, -1]]
+    knight = [[1, -2], [1, 2], [2, 1], [2, -1], [-1, -2], [-2, -1], [-1, 2], [-2, 1]]
   end
 end
